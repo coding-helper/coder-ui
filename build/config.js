@@ -1,6 +1,13 @@
-import Env from './env';
-
 let config = {
-    env: Env
+    env: "development",
+    dev: {
+        host: '0.0.0.0',
+        port: 8888,
+        serviceUrl: 'http://localhost:8880',
+        serviceRewritePath: '/v1',
+    },
+    prod: {
+        serviceUrl: '',
+    },
 };
-export default config;
+module.exports = config;

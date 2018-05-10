@@ -1,3 +1,4 @@
+const config = require('./config.js');
 const webpack = require('webpack');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const ExtractTextPlugin = require('extract-text-webpack-plugin');
@@ -7,10 +8,12 @@ const webpackBaseConfig = require('./webpack.base.config.js');
 const fs = require('fs');
 const package = require('../package.json');
 
-fs.open('./build/env.js', 'w', function(err, fd) {
-    const buf = 'export default "development";';
-    fs.write(fd, buf, 0, buf.length, 0, function(err, written, buffer) {});
-});
+//fs.open('./build/env.js', 'w', function(err, fd) {
+//    const buf = 'module.exports = "development";';
+//    fs.write(fd, buf, 0, buf.length, 0, function(err, written, buffer) {});
+//});
+config.env = "development";
+
 
 module.exports = merge(webpackBaseConfig, {
     devtool: '#source-map',
@@ -31,33 +34,29 @@ module.exports = merge(webpackBaseConfig, {
         new HtmlWebpackPlugin({
             title: 'iView admin v' + package.version,
             filename: '../index.html',
-            template: './src/template/index.ejs',
             inject: false
         }),
         new CopyWebpackPlugin([
             {
                 from: 'src/views/main-components/theme-switch/theme'
             },
-            {
-                from: 'src/views/my-components/text-editor/tinymce'
-            }
         ], {
             ignore: [
-                'text-editor.vue'
             ]
         })
     ],
     devServer: {
         historyApiFallback: true,
         stats: { colors: true },
-        host: "0.0.0.0",
+        host: config.dev.host,
+        port: config.dev.port,
         proxy: {
             //匹配代理的url
             '/api': {
             // 目标服务器地址
-              target: 'http://localhost:8880',
+              target: config.dev.serviceUrl,
               //路径重写
-              pathRewrite: {'^/api' : '/v1'},
+              pathRewrite: {'^/api' : config.dev.serviceRewritePath},
               changeOrigin: true
             }
         }

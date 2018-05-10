@@ -4,11 +4,9 @@ const webpack = require('webpack');
 const ExtractTextPlugin = require('extract-text-webpack-plugin');
 const HappyPack = require('happypack');
 var happyThreadPool = HappyPack.ThreadPool({ size: os.cpus().length });
-
 function resolve (dir) {
     return path.join(__dirname, dir);
 }
-
 module.exports = {
     entry: {
         main: '@/main',
@@ -25,24 +23,22 @@ module.exports = {
                 loader: 'vue-loader',
                 options: {
                     loaders: {
-                        less: ExtractTextPlugin.extract({
-                            use: ['css-loader?minimize', 'autoprefixer-loader', 'less-loader'],
-                            fallback: 'vue-style-loader'
-                        }),
-                        css: ExtractTextPlugin.extract({
-                            use: ['css-loader', 'autoprefixer-loader'],
-                            fallback: 'vue-style-loader'
-                        })
+                        css: 'vue-style-loader!css-loader',
+                        less: 'vue-style-loader!css-loader!less-loader'
+                    },
+                    postLoaders: {
+                        html: 'babel-loader'
                     }
                 }
             },
             {
                 test: /iview\/.*?js$/,
-                loader: 'babel-loader'
+                loader: 'happypack/loader?id=happybabel',
+                exclude: /node_modules/
             },
             {
                 test: /\.js$/,
-                loader: 'babel-loader',
+                loader: 'happypack/loader?id=happybabel',
                 exclude: /node_modules/
             },
             {
@@ -61,11 +57,10 @@ module.exports = {
             {
                 test: /\.less$/,
                 use: ExtractTextPlugin.extract({
-                    use: ['css-hot-loader', 'autoprefixer-loader', 'less-loader'],
+                    use: ['css-loader?minimize','autoprefixer-loader', 'less-loader'],
                     fallback: 'style-loader'
                 }),
             },
-
             {
                 test: /\.(gif|jpg|png|woff|svg|eot|ttf)\??.*$/,
                 loader: 'url-loader?limit=1024'
@@ -81,7 +76,6 @@ module.exports = {
             id: 'happybabel',
             loaders: ['babel-loader'],
             threadPool: happyThreadPool,
-            cache: true,
             verbose: true
         })
     ],

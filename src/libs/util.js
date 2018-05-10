@@ -1,7 +1,7 @@
 import axios from 'axios';
-import env from '../../build/env';
 import semver from 'semver';
 import packjson from '../../package.json';
+import config from '../../build/config';
 
 let util = {
 
@@ -11,17 +11,20 @@ util.title = function (title) {
     window.document.title = title;
 };
 
-const ajaxUrl = env === 'development'
+const ajaxUrl = config.env === 'development'
     ? '/api'
-    : env === 'production'
-    ? 'https://www.url.com'
-    : 'https://debug.url.com';
+    : config.env === 'production'
+        ? config.prod.serviceUrl
+        : 'http://localhost';
 
 util.ajax = axios.create({
     baseURL: ajaxUrl,
     timeout: 30000
 });
 
+util.removeArray = (arr, e) => {
+    arr.splice(arr.indexOf(e), 1);
+};
 util.clearArray = arr => {
     if (Array.isArray(arr)) {
         arr.splice(0, arr.length);
@@ -34,7 +37,7 @@ util.removeArray = (arr, e) => {
 
 util.inOf = function (arr, targetArr) {
     let res = true;
-    arr.map(item => {
+    arr.forEach(item => {
         if (targetArr.indexOf(item) < 0) {
             res = false;
         }
@@ -59,29 +62,21 @@ util.showThisRoute = function (itAccess, currentAccess) {
 };
 
 util.getRouterObjByName = function (routers, name) {
-    let routerObj = {};
-    routers.forEach(item => {
-        if (item.name === 'otherRouter') {
-            item.children.forEach((child, i) => {
-                if (child.name === name) {
-                    routerObj = item.children[i];
-                }
-            });
-        } else {
-            if (item.children.length === 1) {
-                if (item.children[0].name === name) {
-                    routerObj = item.children[0];
-                }
-            } else {
-                item.children.forEach((child, i) => {
-                    if (child.name === name) {
-                        routerObj = item.children[i];
-                    }
-                });
-            }
+    if (!name || !routers || !routers.length) {
+        return null;
+    }
+    // debugger;
+    let routerObj = null;
+    for (let item of routers) {
+        if (item.name === name) {
+            return item;
         }
-    });
-    return routerObj;
+        routerObj = util.getRouterObjByName(item.children, name);
+        if (routerObj) {
+            return routerObj;
+        }
+    }
+    return null;
 };
 
 util.handleTitle = function (vm, item) {
@@ -208,7 +203,7 @@ util.openNewPage = function (vm, name, argu, query) {
     let i = 0;
     let tagHasOpened = false;
     while (i < openedPageLen) {
-        if (name === pageOpenedList[i].name) {  // 页面已经打开
+        if (name === pageOpenedList[i].name) { // 页面已经打开
             vm.$store.commit('pageOpenedList', {
                 index: i,
                 argu: argu,
@@ -247,7 +242,7 @@ util.toDefaultPage = function (routers, name, route, next) {
     let i = 0;
     let notHandle = true;
     while (i < len) {
-        if (routers[i].name === name && routers[i].redirect === undefined) {
+        if (routers[i].name === name && routers[i].children && routers[i].redirect === undefined) {
             route.replace({
                 name: routers[i].children[0].name
             });

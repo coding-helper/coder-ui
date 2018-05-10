@@ -8,7 +8,7 @@ const app = {
         cachePage: [],
         lang: '',
         isFullScreen: false,
-        openedSubmenuArr: [],  // 要展开的菜单数组
+        openedSubmenuArr: [], // 要展开的菜单数组
         menuTheme: 'dark', // 主题
         themeColor: '',
         pageOpenedList: [{
@@ -23,25 +23,30 @@ const app = {
                 path: '',
                 name: 'home_index'
             }
-        ],  // 面包屑数组
+        ], // 面包屑数组
         menuList: [],
         routers: [
             otherRouter,
             ...appRouter
         ],
         tagsList: [...otherRouter.children],
-        messageCount: 0
+        messageCount: 0,
+        dontCache: [] // 在这里定义你不想要缓存的页面的name属性值(参见路由配置router.js)
     },
     mutations: {
         setTagsList (state, list) {
             state.tagsList.push(...list);
         },
         updateMenulist (state) {
-            let accessCode = parseInt(Cookies.get('access'));
             let menuList = [];
+            let menuPermissions = [];
+            let isAdmin = localStorage.isAdmin
+            if (isAdmin !== "1" && localStorage.menuPermissions) {
+                menuPermissions = JSON.parse(localStorage.menuPermissions)
+            }
             appRouter.forEach((item, index) => {
                 if (item.access !== undefined) {
-                    if (Util.showThisRoute(item.access, accessCode)) {
+                    if (isAdmin === "1" || Util.oneOf(item.access, menuPermissions)) {
                         if (item.children.length === 1) {
                             menuList.push(item);
                         } else {
@@ -49,7 +54,7 @@ const app = {
                             let childrenArr = [];
                             childrenArr = item.children.filter(child => {
                                 if (child.access !== undefined) {
-                                    if (child.access === accessCode) {
+                                    if (isAdmin === "1" || Util.oneOf(child.access, menuPermissions)) {
                                         return child;
                                     }
                                 } else {
@@ -67,16 +72,20 @@ const app = {
                         let childrenArr = [];
                         childrenArr = item.children.filter(child => {
                             if (child.access !== undefined) {
-                                if (Util.showThisRoute(child.access, accessCode)) {
+                                if (isAdmin === "1" || Util.oneOf(child.access, menuPermissions)) {
                                     return child;
                                 }
                             } else {
                                 return child;
                             }
                         });
-                        let handledItem = JSON.parse(JSON.stringify(menuList[len - 1]));
-                        handledItem.children = childrenArr;
-                        menuList.splice(len - 1, 1, handledItem);
+                        if (childrenArr === undefined || childrenArr.length === 0) {
+                            menuList.splice(len - 1, 1);
+                        } else {
+                            let handledItem = JSON.parse(JSON.stringify(menuList[len - 1]));
+                            handledItem.children = childrenArr;
+                            menuList.splice(len - 1, 1, handledItem);
+                        }
                     }
                 }
             });
@@ -177,6 +186,14 @@ const app = {
         },
         setMessageCount (state, count) {
             state.messageCount = count;
+        },
+        increateTag (state, tagObj) {
+            if (!Util.oneOf(tagObj.name, state.dontCache)) {
+                state.cachePage.push(tagObj.name);
+                localStorage.cachePage = JSON.stringify(state.cachePage);
+            }
+            state.pageOpenedList.push(tagObj);
+            localStorage.pageOpenedList = JSON.stringify(state.pageOpenedList);
         }
     }
 };

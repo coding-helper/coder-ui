@@ -209,11 +209,12 @@ export default {
                     width: 200,
                     align: 'center',
                     render: (h, params) => {
-                        return this.dict.type.filter(item => {
+                        let value = this.dict.type.filter(item => {
                             return params.row.type == item.value
                         }).map(item => {
                             return item.label
                         }) + '【' + params.row.type + '】';
+                        return h('span', value);
                     },
                 },
                 {
@@ -221,11 +222,12 @@ export default {
                     key: 'datatype',
                     align: 'center',
                     render: (h, params) => {
-                        return this.dict.datatype.filter(item => {
+                        let value = this.dict.datatype.filter(item => {
                             return params.row.datatype == item.value;
                         }).map(item => {
                             return item.label;
                         });
+                        return h('span', value);
                     },
                 },
                 {
@@ -244,7 +246,8 @@ export default {
                     width: 70,
                     align: 'center',
                     render: (h, params) => {
-                        return this.dict.required.filter(item => params.row.required == item.value).map(item => item.label);
+                        let value = this.dict.required.filter(item => params.row.required == item.value).map(item => item.label);
+                        return h('span', value);
                     },
                 },
                 {

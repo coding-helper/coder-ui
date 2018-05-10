@@ -1,6 +1,5 @@
 <style lang="less">
     @import '../../styles/common.less';
-    @import '../tables/components/table.less';
 </style>
 </style>
 <template><div>
@@ -30,7 +29,7 @@
 </div></template>
 <script>
 import util from '@/libs/util';
-import DragableTable from '../tables/components/dragableTable.vue';
+import DragableTable from '../components/tables/dragableTable.vue';
 
 export default {
     components: {
@@ -191,7 +190,7 @@ export default {
                         value: 'number'
                     }
                 ]
-            }        
+            }
         }
     },
     mounted () {
@@ -239,7 +238,7 @@ export default {
                 }
             }).catch(err => {
                 console.log(err)
-            }) 
+            })
         },
         goBack () {
             this.$router.go(-1)

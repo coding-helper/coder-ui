@@ -1,12 +1,13 @@
 import Cookies from 'js-cookie';
 
 const user = {
-    state: {},
+    state: {
+        optPermissions: [],
+        menuPermissions: [],
+    },
     mutations: {
         logout (state, vm) {
             Cookies.remove('user');
-            Cookies.remove('password');
-            Cookies.remove('access');
             Cookies.remove('token');
             // 恢复默认样式
             let themeLink = document.querySelector('link[name="theme"]');
@@ -20,7 +21,16 @@ const user = {
             if (theme) {
                 localStorage.theme = theme;
             }
-        }
+        },
+        setPermissions (state, permissions) {
+            localStorage.isAdmin = permissions.isAdmin;
+            if (permissions.isAdmin !== "1") {
+                localStorage.menuPermissions = JSON.stringify(permissions.menuPermissions)
+                state.menuPermissions = permissions.menuPermissions;
+                localStorage.optPermissions = JSON.stringify(permissions.optPermissions)
+                state.optPermissions = permissions.optPermissions;
+            }
+        },
     }
 };
 
